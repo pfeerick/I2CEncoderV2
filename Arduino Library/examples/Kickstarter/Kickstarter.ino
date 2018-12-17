@@ -1,5 +1,5 @@
 #include <Wire.h>
-#include "i2cEncoderLibV2.h"
+#include <i2cEncoderLibV2.h>
 
 /*In this example, i want my variable counter between -10 and 10.
   When it reaches the limit the LED will blink red in case of minimum and will blink green when it reaches the maximum.
@@ -13,7 +13,6 @@
   INT -> 12
 */
 
-
 #define ENCODER_N 5
 const int IntPin = 12;
 i2cEncoderLibV2 encoder[] = { i2cEncoderLibV2(0b0100000), i2cEncoderLibV2(0b1100000), i2cEncoderLibV2(0b1000000), i2cEncoderLibV2(0b0010000), i2cEncoderLibV2(0b1010000)}; //Class initialization with the I2C addresses
@@ -22,11 +21,11 @@ int32_t counter[] = {0, 0, 0, 0, 0};
 int32_t maxvalue[] = {20, 20, 20, 20.20};
 int32_t minvalue[] = { -20, -20, -20, -20, -20};
 int32_t econfig[] = {
-  (INT_DATA | WRAP_ENABLE | DIRE_LEFT | IPUP_ENABLE | RMOD_X1 | STD_ENCODER),
-  (INT_DATA | WRAP_ENABLE | DIRE_LEFT | IPUP_ENABLE | RMOD_X1 | RGB_ENCODER),
-  (INT_DATA | WRAP_ENABLE | DIRE_LEFT | IPUP_ENABLE | RMOD_X1 | STD_ENCODER),
-  (INT_DATA | WRAP_ENABLE | DIRE_LEFT | IPUP_ENABLE | RMOD_X1 | RGB_ENCODER),
-  (INT_DATA | WRAP_ENABLE | DIRE_LEFT | IPUP_ENABLE | RMOD_X1 | STD_ENCODER),
+  (INT_DATA | WRAP_ENABLE | DIRE_LEFT | GP_PULL_EN | RMOD_X1 | STD_ENCODER),
+  (INT_DATA | WRAP_ENABLE | DIRE_LEFT | GP_PULL_EN | RMOD_X1 | RGB_ENCODER),
+  (INT_DATA | WRAP_ENABLE | DIRE_LEFT | GP_PULL_EN | RMOD_X1 | STD_ENCODER),
+  (INT_DATA | WRAP_ENABLE | DIRE_LEFT | GP_PULL_EN | RMOD_X1 | RGB_ENCODER),
+  (INT_DATA | WRAP_ENABLE | DIRE_LEFT | GP_PULL_EN | RMOD_X1 | STD_ENCODER),
 };
 
 uint8_t encoder_status, i;
@@ -39,9 +38,9 @@ void setup(void)
   for (i = 0; i < ENCODER_N; i++) {
     Serial.println(econfig[i], HEX);
     encoder[i].begin(econfig[i]);
-    encoder[i].writeGP1conf(GP_AN | GP_PUP_DI | GP_INT_DI);
-    encoder[i].writeGP2conf(GP_AN | GP_PUP_DI | GP_INT_DI);
-    encoder[i].writeGP3conf(GP_AN | GP_PUP_DI | GP_INT_DI);
+    encoder[i].writeGP1conf(GP_AN | GP_PULL_DI | GP_INT_DI);
+    encoder[i].writeGP2conf(GP_AN | GP_PULL_DI | GP_INT_DI);
+    encoder[i].writeGP3conf(GP_AN | GP_PULL_DI | GP_INT_DI);
     encoder[i].writeCounter(counter[i]);
     encoder[i].writeMax(maxvalue[i]);
     encoder[i].writeMin(minvalue[i]);
@@ -73,13 +72,9 @@ void setup(void)
 
 void loop() {
 
-
-
-
   if (digitalRead(IntPin) == LOW) {
 
     digitalWrite(LED_BUILTIN, HIGH);
-
 
     for (i = 0; i < ENCODER_N; i++) { //Use a for loop for read all the 4 encoders
       if (digitalRead(IntPin) == HIGH)
@@ -87,36 +82,36 @@ void loop() {
 
       if (encoder[i].updateStatus()) {
 
-        if (encoder[i].readStatus(S_RINC)) {
+        if (encoder[i].readStatus(RINC)) {
           encoder[i].writeLEDR(0xff);
         }
 
-        if (encoder[i].readStatus(S_RDEC)) {
+        if (encoder[i].readStatus(RDEC)) {
           encoder[i].writeLEDG(0xff);
         }
 
-        if (encoder[i].readStatus(S_PUSHP)) {
+        if (encoder[i].readStatus(PUSHP)) {
           encoder[i].writeLEDB(0xff);
           Serial.print("E");
           Serial.print(i);
           Serial.print(" Push\n");
         }
 
-        if (encoder[i].readStatus(S_PUSHR)) {
+        if (encoder[i].readStatus(PUSHR)) {
           encoder[i].writeLEDB(0xff);
           Serial.print("E");
           Serial.print(i);
           Serial.print(" Released\n");
         }
 
-        if (encoder[i].readStatus(S_RMAX)) {
+        if (encoder[i].readStatus(RMAX)) {
           encoder[i].writeLEDB(0xff);
           Serial.print("E");
           Serial.print(i);
           Serial.print(" Max\n");
         }
 
-        if (encoder[i].readStatus(S_RMIN)) {
+        if (encoder[i].readStatus(RMIN)) {
           encoder[i].writeLEDB(0xff);
           Serial.print("E");
           Serial.print(i);
@@ -139,4 +134,3 @@ void loop() {
     }
   }
 }
-
